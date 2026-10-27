@@ -6,6 +6,13 @@
 $ jupyter lab
 ```
 
+# Setup repo
+
+```bash
+$ pip install -r requirements.txt
+$ jupyter lab
+```
+
 # LaTeX
 
 Symbols reference: [https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols](https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols)
