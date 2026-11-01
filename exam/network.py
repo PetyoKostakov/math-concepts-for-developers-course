@@ -25,6 +25,16 @@ class Network:
         """Return the digit whose output neuron has the highest activation."""
         return int(np.argmax(self.feedforward(a)))
 
+    def gradient_descent_step(self, grad_weights, grad_biases, eta):
+        """Move every weight and bias a small step (eta) against its gradient.
+
+        grad_weights / grad_biases have the same shapes as self.weights / self.biases
+        and say how much the cost grows when that parameter grows.
+        """
+        for layer in range(len(self.weights)):
+            self.weights[layer] -= eta * grad_weights[layer]
+            self.biases[layer] -= eta * grad_biases[layer]
+
     def _init_weights(self, rng):
         """Create one random weight matrix for every pair of neighbouring layers."""
         weights = []
