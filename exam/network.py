@@ -56,6 +56,54 @@ class Network:
 
         return grad_weights, grad_biases
 
+    def accuracy(self, data):
+        """Fraction of (input, target) pairs where the predicted digit is the target digit."""
+        correct = sum(self.predict(x) == int(np.argmax(y)) for x, y in data)
+        return correct / len(data)
+
+    def train(self, training_data, epochs, batch_size, eta, test_data=None, seed=None, verbose=True):
+        """Train with mini-batch stochastic gradient descent.
+
+        One epoch = one pass over all training data, in random order, split into
+        batches. For each batch the gradients of its examples are averaged and
+        one gradient descent step is taken. Returns the accuracy after every epoch.
+        """
+        rng = np.random.default_rng(seed)
+        history = {"train_accuracy": [], "test_accuracy": []}
+
+        for epoch in range(epochs):
+            order = rng.permutation(len(training_data))
+            shuffled = [training_data[i] for i in order]
+
+            for start in range(0, len(shuffled), batch_size):
+                batch = shuffled[start:start + batch_size]
+                self._train_on_batch(batch, eta)
+
+            history["train_accuracy"].append(self.accuracy(training_data))
+            message = f"epoch {epoch + 1:3d}: train accuracy = {history['train_accuracy'][-1]:.2%}"
+            if test_data is not None:
+                history["test_accuracy"].append(self.accuracy(test_data))
+                message += f", test accuracy = {history['test_accuracy'][-1]:.2%}"
+            if verbose:
+                print(message)
+
+        return history
+
+    def _train_on_batch(self, batch, eta):
+        """One gradient descent step using the average gradient of the batch."""
+        sum_grad_w = [np.zeros_like(w) for w in self.weights]
+        sum_grad_b = [np.zeros_like(b) for b in self.biases]
+
+        for x, y in batch:
+            grad_w, grad_b = self.backprop(x, y)
+            for layer in range(len(self.weights)):
+                sum_grad_w[layer] += grad_w[layer]
+                sum_grad_b[layer] += grad_b[layer]
+
+        average_w = [g / len(batch) for g in sum_grad_w]
+        average_b = [g / len(batch) for g in sum_grad_b]
+        self.gradient_descent_step(average_w, average_b, eta)
+
     def gradient_descent_step(self, grad_weights, grad_biases, eta):
         """Move every weight and bias a small step (eta) against its gradient.
 
